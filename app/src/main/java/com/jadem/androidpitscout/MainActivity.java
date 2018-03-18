@@ -12,15 +12,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
-
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     ListView listView;
     ArrayAdapter<String> adapter;
+    ArrayList<String> ListOfTeams;
+    ListAdapter adapter2;
     EditText searchBar;
     Activity activity;
 
@@ -32,7 +35,13 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         listView = (ListView) findViewById(R.id.teamsList);
-        listView.setAdapter(adapter);
+
+        String number = "1678";
+        String name = "CC";
+
+        ListOfTeams = new ArrayList<>();
+        addMessageToList(number, name, ListOfTeams);
+        //listView.setAdapter(adapter);
         updateListView();
     }
 
@@ -41,6 +50,17 @@ public class MainActivity extends AppCompatActivity {
         searchBar.setFocusable(false);
         updateListView();
         searchBar.setFocusableInTouchMode(true);
+
+    }
+
+    public void addMessageToList(String teamNumber, String teamName, ArrayList<String> ArrayListOfTeams){
+        String input = teamNumber + " " + teamName;
+        System.out.println(input);
+        ArrayListOfTeams.add(input);
+        adapter2 = new TeamListAdapter(getApplicationContext(), ArrayListOfTeams, MainActivity.this);
+
+        listView.setAdapter(adapter2);
+
 
     }
 
