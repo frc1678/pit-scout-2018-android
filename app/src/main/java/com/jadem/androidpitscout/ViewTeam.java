@@ -1,8 +1,10 @@
 package com.jadem.androidpitscout;
 
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -35,17 +37,13 @@ public class ViewTeam extends AppCompatActivity {
         TeamName = (TextView) findViewById(R.id.teamNameAndNumber);
 
         SEALsNotesEditText.setFocusable(true);
-
-
-
-        //TODO: When the TimerActivity is added, uncomment
-        /*TimerButton.setOnClickListener(new View.OnClickListener() {
+        
+        TimerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(ViewTeam.this, TimerActivity.class));
             }
         });
-    }*/
+    }
     }
 
-}
