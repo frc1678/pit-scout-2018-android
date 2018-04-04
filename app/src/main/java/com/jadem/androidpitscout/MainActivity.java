@@ -1,6 +1,8 @@
 package com.jadem.androidpitscout;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -25,6 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     Context context;
@@ -34,9 +38,6 @@ public class MainActivity extends AppCompatActivity {
     List<DataModel> dataModelsList;
     /*TeamListAdapter*/BaseAdapter adapter;
     private DatabaseReference dataBaseReference;
-
-    String teamName;
-    Integer teamNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
             //TODO: Definitely make these methods actually do something.
             @Override
-            public Object getItem(int i) {
+            public View getItem(int position) {
                 return null;
             }
 
@@ -92,6 +93,22 @@ public class MainActivity extends AppCompatActivity {
         };
         listView.setAdapter(adapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+
+                DataModel dataModel = dataModelsList.get(pos);
+                String teamName = dataModel.getName();
+                Integer teamNumber = dataModel.getTeamNumber();
+
+                Intent intent = new Intent(MainActivity.this,ViewTeam.class);
+                intent.putExtra("teamName", teamName);
+                intent.putExtra("teamNumber", teamNumber);
+
+                startActivity(intent);
+            }
+        });
+
         ValueEventListener teamEventListener = new ValueEventListener() {
 
             //TODO: This is inefficient. Replace with more efficient method later.
@@ -122,10 +139,7 @@ public class MainActivity extends AppCompatActivity {
         ref.addListenerForSingleValueEvent(teamEventListener);
 
 
-        /*dataModelsList.add(new DataModel("Citrus Circuits", "1678 "));
-        dataModelsList.add(new DataModel("The Cheesy Poofs", "254 "));
-        dataModelsList.add(new DataModel("Robonauts", "118 "));
-        dataModelsList.add(new DataModel("Robowranglers", "148 "));*/
+
     }
 
         @Override
@@ -141,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
 
             return super.onOptionsItemSelected(item);
         }
+
 }
 
 

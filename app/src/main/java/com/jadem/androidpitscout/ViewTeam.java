@@ -26,7 +26,8 @@ public class ViewTeam extends AppCompatActivity {
     int teamNumber;
     EditText SEALsNotesEditText;
     Button timerButton;
-    TextView teamName;
+    String teamName;
+    TextView teamTextView;
     TextView SEALsNotesTextView;
     Context context;
 
@@ -44,10 +45,13 @@ public class ViewTeam extends AppCompatActivity {
 
         SEALsNotesEditText = (EditText) findViewById(R.id.SEALsNotesEditText);
         SEALsNotesTextView = (TextView) findViewById(R.id.SEALsNotesTextView);
+        teamTextView = (TextView) findViewById(R.id.teamTextView);
 
         timerButton = (Button) findViewById(R.id.timer);
-        String teamNameString = "" + teamNumber;
-        teamName.setText(teamNameString);
+        String teamNameString = "Team " + teamNumber + " - " + teamName;
+        teamTextView.setText(teamNameString);
+
+
 
         SEALsNotesEditText.setFocusable(true);
     }
@@ -61,5 +65,6 @@ public class ViewTeam extends AppCompatActivity {
     private void getExtras() {
         Intent previous = getIntent();
         teamNumber = previous.getIntExtra("teamNumber", 0);
+        teamName = previous.getStringExtra("teamName");
     }
 }

@@ -3,11 +3,10 @@
     android:orientation="vertical" android:layout_width= "wrap_content"
     android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/teamNumber"
+    <TextView
+        android:id="@+id/teamTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter Team Number"
         android:layout_centerHorizontal="true"
         android:textSize="25dp"
         android:paddingLeft="3dp"
@@ -19,7 +18,7 @@
         android:layout_height="50dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_below="@+id/teamNumber"
+        android:layout_below="@+id/teamTextView"
         android:layout_marginTop="100dp"
         android:text="TIMER"
         android:paddingLeft="3dp"
@@ -45,5 +44,6 @@
         android:layout_marginTop="10dp"
         android:paddingLeft="3dp"
         />
+
 
 </RelativeLayout>
