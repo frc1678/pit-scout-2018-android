@@ -1,21 +1,20 @@
 package com.jadem.androidpitscout;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -33,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     public static FirebaseDatabase dataBase;
     public static DatabaseReference ref;
     List<DataModel> dataModelsList;
-    TeamListAdapter adapter;
+    /*TeamListAdapter*/BaseAdapter adapter;
     private DatabaseReference dataBaseReference;
 
     String teamName;
@@ -52,7 +51,45 @@ public class MainActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.teamsList);
 
-        //adapter = new TeamListAdapter(dataModelsList, getApplicationContext());
+        dataModelsList = new ArrayList<DataModel>();
+        adapter = new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return dataModelsList.size();
+            }
+
+            //TODO: Definitely make these methods actually do something.
+            @Override
+            public Object getItem(int i) {
+                return null;
+            }
+
+            @Override
+            public long getItemId(int i) {
+                return 0;
+            }
+
+            @Override //Partially modelled after http://stackoverflow.com/questions/35761897/how-do-i-make-a-relative-layout-an-item-of-my-listview-and-detect-gestures-over
+            public View getView(int position, View convertView, ViewGroup parent) {
+                LayoutInflater layoutInflater;
+                TextView teamView;
+
+                if(convertView == null){
+                    layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    convertView = layoutInflater.inflate(R.layout.row_item, parent, false);
+
+                    teamView = (TextView) convertView.findViewById(R.id.teamView);
+                    convertView.setTag(teamView);
+                } else {
+                    teamView = (TextView) convertView.getTag();
+                }
+
+                DataModel dataModel = dataModelsList.get(position);
+                teamView.setText(dataModel.getFormattedString());
+
+                return convertView;
+            }
+        };
         listView.setAdapter(adapter);
 
         ValueEventListener teamEventListener = new ValueEventListener() {
@@ -121,5 +158,3 @@ public class MainActivity extends AppCompatActivity {
 
         return true;
     }*/
-
-

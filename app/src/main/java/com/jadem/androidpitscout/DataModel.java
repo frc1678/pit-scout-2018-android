@@ -21,4 +21,8 @@ public class DataModel {
     public Integer getTeamNumber() {
         return teamNumber;
     }
+
+    public String getFormattedString() {
+        return teamNumber + " - " + name;
+    }
 }
