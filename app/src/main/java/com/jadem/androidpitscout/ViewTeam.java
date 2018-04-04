@@ -9,7 +9,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Created by jadem on 3/18/2018.
@@ -19,10 +23,10 @@ public class ViewTeam extends AppCompatActivity {
 
     EditText SEALsNotesEditText;
     Button TimerButton;
-    TextView TeamName;
+    EditText TeamNumber;
     TextView SEALsNotesTextView;
-
-    DatabaseReference dataBase;
+    FirebaseDatabase dataBase;
+    DatabaseReference ref;
 
 
     @Override
@@ -34,10 +38,14 @@ public class ViewTeam extends AppCompatActivity {
         SEALsNotesEditText = (EditText) findViewById(R.id.SEALsNotesEditText);
         SEALsNotesTextView = (TextView) findViewById(R.id.SEALsNotesTextView);
         TimerButton = (Button) findViewById(R.id.timer);
-        TeamName = (TextView) findViewById(R.id.teamNameAndNumber);
+        TeamNumber = (EditText) findViewById(R.id.teamNumber);
+
+        dataBase = FirebaseDatabase.getInstance();
+        ref = dataBase.getReference().child("Teams").child("" + TeamNumber);
 
         SEALsNotesEditText.setFocusable(true);
-        
+        TeamNumber.setFocusable(true);
+
         TimerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,5 +53,7 @@ public class ViewTeam extends AppCompatActivity {
             }
         });
     }
-    }
+
+
+}
 

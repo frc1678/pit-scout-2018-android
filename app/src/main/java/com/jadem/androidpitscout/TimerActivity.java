@@ -62,9 +62,9 @@ public class TimerActivity extends AppCompatActivity {
             @Override
             public void onChronometerTick(CustomChronometer cArg) {
                 long time = SystemClock.elapsedRealtime() - cArg.getBase();
-                int h   = (int)(time /3600000);
+                int h = (int)(time /3600000);
                 int m = (int)(time - h*3600000)/60000;
-                int s= (int)(time - h*3600000 - m*60000)/1000 ;
+                int s = (int)(time - h*3600000 - m*60000)/1000 ;
                 int ms = (int)(time - h*3600000 - m*60000 - s*1000)/10;
                 String mm = m < 10 ? "0"+m: m+"";
                 String ss = s < 10 ? "0"+s: s+"";
@@ -128,7 +128,7 @@ public class TimerActivity extends AppCompatActivity {
             final EditText distanceEditText = (EditText)confirmDialog.findViewById(R.id.distanceView);
             final EditText lengthEditText = (EditText)confirmDialog.findViewById(R.id.lengthView);
 
-            String question = "What was the " + (isRamp ? "ramp " : "drive ") + "distance travelled?";
+            String question = "What was the " + (isRamp ? "ramp " : "drive ") + "distance traveled?";
             questionView.setText(question);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -157,8 +157,8 @@ public class TimerActivity extends AppCompatActivity {
                             float deciTime = time;
                             deciTime = deciTime / 1000; //Stores time in seconds.
 
-                            double ratio = 7.4; //This is the treadmill ratio.
-                            boolean outcome = distance > (ratio - length);
+                            double ratio = 1.3; //This is the treadmill ratio. //TODO: This ratio need to be correctly calculated.
+                            boolean outcome = distance > (ratio * 1.3 - length * 1.3);
 
                             //TODO: write to firebase as an array
                             myRef.child("pit" + (isRamp ? "Ramp" : "Drive") + "Time")/*.child(arrayNum)*/.setValue(deciTime);
@@ -186,6 +186,7 @@ public class TimerActivity extends AppCompatActivity {
         time = 0;
         timerView.setText("00:00.00");
         timerRunning = false;
+        toggleButton.setText("START");
     }
-
 }
+
