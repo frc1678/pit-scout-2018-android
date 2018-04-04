@@ -1,5 +1,7 @@
 package com.jadem.androidpitscout;
 
+
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -21,12 +23,14 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class ViewTeam extends AppCompatActivity {
 
+    int teamNumber;
     EditText SEALsNotesEditText;
-    Button TimerButton;
-    EditText TeamNumber;
+    Button timerButton;
+    TextView teamName;
     TextView SEALsNotesTextView;
-    FirebaseDatabase dataBase;
-    DatabaseReference ref;
+    Context context;
+
+    DatabaseReference dataBase;
 
 
     @Override
@@ -35,25 +39,27 @@ public class ViewTeam extends AppCompatActivity {
         setContentView(R.layout.team_view);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        context = this;
+        getExtras();
+
         SEALsNotesEditText = (EditText) findViewById(R.id.SEALsNotesEditText);
         SEALsNotesTextView = (TextView) findViewById(R.id.SEALsNotesTextView);
-        TimerButton = (Button) findViewById(R.id.timer);
-        TeamNumber = (EditText) findViewById(R.id.teamNumber);
 
-        dataBase = FirebaseDatabase.getInstance();
-        ref = dataBase.getReference().child("Teams").child("" + TeamNumber);
+        timerButton = (Button) findViewById(R.id.timer);
+        String teamNameString = "" + teamNumber;
+        teamName.setText(teamNameString);
 
         SEALsNotesEditText.setFocusable(true);
-        TeamNumber.setFocusable(true);
-
-        TimerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(ViewTeam.this, TimerActivity.class));
-            }
-        });
     }
 
+    public void openTimer(View view) {
+        Intent intent = new Intent(context, TimerActivity.class);
+        intent.putExtra("teamNumber", teamNumber);
+        startActivity(intent);
+    }
 
+    private void getExtras() {
+        Intent previous = getIntent();
+        teamNumber = previous.getIntExtra("teamNumber", 0);
+    }
 }
-

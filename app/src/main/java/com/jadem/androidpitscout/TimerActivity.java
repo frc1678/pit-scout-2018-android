@@ -2,6 +2,7 @@ package com.jadem.androidpitscout;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -11,11 +12,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.Chronometer;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -26,6 +29,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by niraq on 3/15/2018.
@@ -38,10 +46,14 @@ public class TimerActivity extends AppCompatActivity {
     private Button toggleButton;
     private CustomChronometer timerView;
     private Switch timerTypeSwitch;
+    private ListView timerListView;
     private FirebaseDatabase database;
     private DatabaseReference myRef;
+    private Map<String, List<TrialData>> trialListMap;
+    private Map<String, Long> trialCountMap;
     private ValueEventListener trialEventListener;
     private long time = 0;
+    private BaseAdapter timerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +61,12 @@ public class TimerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_timer);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        teamNumber = 1;//TODO: Temporary for testing, remove when done
+        getExtras();
 
         timerRunning = false;
 
         database = FirebaseDatabase.getInstance();
-        myRef = database.getReference().child("Teams").child("" + teamNumber); //TODO: Receive team number before doing this!
+        myRef = database.getReference().child("Teams").child("" + teamNumber);
 
         timerView = (CustomChronometer) findViewById(R.id.timerView);
         timerView.setText("00:00.00");
@@ -79,26 +91,143 @@ public class TimerActivity extends AppCompatActivity {
         timerTypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 isRamp = isChecked;
-                //TODO: Change what the listview displays (and update it?)
+                timerAdapter.notifyDataSetChanged();
             }
         });
+
+        //Allows the adapter to work without data
+        trialListMap = new HashMap<>();
+        trialListMap.put("Ramp", new ArrayList<TrialData>());
+        trialListMap.put("Drive", new ArrayList<TrialData>());
+
+        trialCountMap = new HashMap<>();
+        trialCountMap.put("Ramp", Long.valueOf(0));
+        trialCountMap.put("Drive", Long.valueOf(0));
+
+        timerAdapter = new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return trialListMap.get(isRamp ? "Ramp" : "Drive").size();
+            }
+
+            //TODO: Possibly make these methods actually do something.
+            @Override
+            public Object getItem(int i) {
+                return null;
+            }
+
+            @Override
+            public long getItemId(int i) {
+                return 0;
+            }
+
+            @Override //Partially modelled after http://stackoverflow.com/questions/35761897/how-do-i-make-a-relative-layout-an-item-of-my-listview-and-detect-gestures-over
+            public View getView(int position, View convertView, ViewGroup parent) {
+                LayoutInflater layoutInflater;
+                ViewHolder listViewHolder;
+
+                if(convertView == null){
+                    layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    convertView = layoutInflater.inflate(R.layout.layout_timer_list_item, parent, false);
+
+                    listViewHolder = new ViewHolder();
+                    listViewHolder.trialView = (TextView) convertView.findViewById(R.id.trialView);
+                    listViewHolder.timeView = (TextView) convertView.findViewById(R.id.timeView);
+                    listViewHolder.outcomeView = (TextView) convertView.findViewById(R.id.outcomeView);
+                    convertView.setTag(listViewHolder);
+                } else {
+                    listViewHolder = (ViewHolder) convertView.getTag();
+                }
+
+                String posString = "" + (position + 1);
+                listViewHolder.trialView.setText(posString);
+                String timeString = trialListMap.get(isRamp ? "Ramp" : "Drive").get(position).getTimeString();
+                listViewHolder.timeView.setText(timeString);
+                String outcomeString = trialListMap.get(isRamp ? "Ramp" : "Drive").get(position).getOutcomeString();
+                listViewHolder.outcomeView.setText(outcomeString);
+
+                return convertView;
+            }
+        };
+        timerListView = (ListView) findViewById(R.id.timesList);
+        timerListView.setAdapter(timerAdapter);
 
         trialEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(!dataSnapshot.child("Messages").getValue().equals(null)) {
-                    //TODO: Complete this
+                //TODO: Should these be final?
+                String dTime = "pitDriveTime";
+                String rTime = "pitRampTime";
+                String dOut = "pitDriveTimeOutcome";
+                String rOut = "pitRampTimeOutcome";
+
+                if((dataSnapshot.hasChild(dTime) && dataSnapshot.hasChild(dOut)) || (dataSnapshot.hasChild(rTime) && dataSnapshot.hasChild(rOut))) {
+
+                    List<TrialData> rampList = new ArrayList<TrialData>();
+
+                    //Fills ramp list.
+                    for(int trialNum = 0; trialNum < dataSnapshot.child(rTime).getChildrenCount(); trialNum++) {
+
+                        double time = 0;
+                        boolean outcome = false;
+                        if(dataSnapshot.child(rTime).hasChild("" + trialNum) && dataSnapshot.child(rOut).hasChild("" + trialNum)) {
+                            try {
+                                time = (Double) dataSnapshot.child(rTime).child("" + trialNum).getValue();
+                                outcome = (Boolean) dataSnapshot.child(rOut).child("" + trialNum).getValue();
+                            } catch (NullPointerException npe) {
+                                Log.e("(NullPointerException", "Incorrect data type for team: " + teamNumber + ", trial: " + trialNum + ", type: ramp");
+                            }
+                        }
+
+                        //If time == 0, the data for that trial is invalid.
+                        TrialData data = new TrialData(time, outcome);
+                        rampList.add(data);
+
+                    }
+
+                    List<TrialData> driveList = new ArrayList<TrialData>();
+
+                    //Fills drive list.
+                    for(int trialNum = 0; trialNum < dataSnapshot.child(dTime).getChildrenCount(); trialNum++) {
+
+                        double time = 0;
+                        boolean outcome = false;
+                        if(dataSnapshot.child(dTime).hasChild("" + trialNum) && dataSnapshot.child(dOut).hasChild("" + trialNum)) {
+                            try {
+                                time = (Double) dataSnapshot.child(dTime).child("" + trialNum).getValue();
+                                outcome = (Boolean) dataSnapshot.child(dOut).child("" + trialNum).getValue();
+                            } catch (NullPointerException npe) {
+                                Log.e("(NullPointerException", "Incorrect data type for team: " + teamNumber + ", trial: " + trialNum + ", type: drive");
+                            }
+                        }
+
+                        //If time == 0, the data for that trial is invalid.
+                        TrialData data = new TrialData(time, outcome);
+                        driveList.add(data);
+
+                    }
+
+                    trialListMap = new HashMap<>();
+                    trialListMap.put("Ramp", rampList);
+                    trialListMap.put("Drive", driveList);
+
+                    trialCountMap = new HashMap<>();
+                    trialCountMap.put("Ramp", dataSnapshot.child(rTime).getChildrenCount());
+                    trialCountMap.put("Drive", dataSnapshot.child(dTime).getChildrenCount());
+
+                    timerAdapter.notifyDataSetChanged();
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e("Error", "ChatRoomEventListener Cancelled");
+                Log.e("Error", "trialEventListener Cancelled");
                 Toast connectionErrorToast = Toast.makeText(getApplicationContext(), "Connection Error", Toast.LENGTH_SHORT);
                 connectionErrorToast.setGravity(Gravity.CENTER, 0, 0);
                 connectionErrorToast.show();
             }
         };
+        myRef.addValueEventListener(trialEventListener);
     }
 
     public void toggleTimer(View view) {
@@ -108,6 +237,14 @@ public class TimerActivity extends AppCompatActivity {
             timerView.stop();
             timerRunning = false;
             toggleButton.setText("Start");
+            int h = (int)(time /3600000);
+            int m = (int)(time - h*3600000)/60000;
+            int s= (int)(time - h*3600000 - m*60000)/1000 ;
+            int ms = (int)(time - h*3600000 - m*60000 - s*1000)/10;
+            String mm = m < 10 ? "0"+m: m+"";
+            String ss = s < 10 ? "0"+s: s+"";
+            String msms = ms < 10 ? "0"+ms: ms+"";
+            timerView.setText(mm+":"+ss+"."+msms);
         } else {
             //Turns timer on.
             time = 0;
@@ -122,47 +259,66 @@ public class TimerActivity extends AppCompatActivity {
         if(!timerRunning && time != 0) {
             isRamp = timerTypeSwitch.isChecked();
 
-            LayoutInflater layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            final RelativeLayout confirmDialog = (RelativeLayout) layoutInflater.inflate(R.layout.confirm_dialog, null);
-            final TextView questionView = (TextView)confirmDialog.findViewById(R.id.questionView);
-            final EditText distanceEditText = (EditText)confirmDialog.findViewById(R.id.distanceView);
-            final EditText lengthEditText = (EditText)confirmDialog.findViewById(R.id.lengthView);
+            if(isRamp) {
 
-            String question = "What was the " + (isRamp ? "ramp " : "drive ") + "distance traveled?";
-            questionView.setText(question);
+                //TODO: Should these be final?
+                LayoutInflater layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                final RelativeLayout confirmDialog = (RelativeLayout) layoutInflater.inflate(R.layout.ramp_confirm_dialog, null);
+                final TextView questionView = (TextView)confirmDialog.findViewById(R.id.questionView);
+                final RadioGroup ratioRadioGroup = (RadioGroup)confirmDialog.findViewById(R.id.radioGroup);
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setView(confirmDialog)
-                    .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            //TODO: Send values to firebase (distances, times, and outcome)
-                            //TODO: Add calculation for true or false
+                String question = "Was the robot successful?";
+                questionView.setText(question);
 
-                            String distanceString = distanceEditText.getText().toString();
-                            String lengthString = lengthEditText.getText().toString();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setView(confirmDialog)
+                        .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
 
-                            float distance = 0, length = 0;
-                            try {
-                                distance = Float.parseFloat(distanceString);
-                                length = Float.parseFloat(lengthString);
 
-                            } catch (NumberFormatException e) {
-                                Toast decimalToast = Toast.makeText(getApplicationContext(), "Invalid numbers (check for extra decimals)", Toast.LENGTH_SHORT);
-                                decimalToast.setGravity(Gravity.CENTER, 0, 0);
-                                decimalToast.show();
-                                return;
-                                //TODO: Re-open dialog with data
                             }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                final AlertDialog dialog = builder.create();
+                dialog.show();
 
-                            float deciTime = time;
+                //Changes the onClick of the positive button (Submit) so that the dialog doesn't close if data is incorrect.
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Boolean canContinue = false;
+
+                        boolean success = false;
+                        switch(ratioRadioGroup.getCheckedRadioButtonId()) {
+                            case R.id.yesButton:
+                                success = true;
+                                canContinue = true;
+                                break;
+                            case R.id.noButton:
+                                success = false;
+                                canContinue = true;
+                                break;
+                            case -1: //This case occurs when no button is selected.
+                                Toast radioToast = Toast.makeText(getApplicationContext(), "Please state if the robot was successful", Toast.LENGTH_SHORT);
+                                radioToast.setGravity(Gravity.CENTER, 0, 0);
+                                radioToast.show();
+                                canContinue = false;
+                                break;
+                        }
+
+                        if(canContinue) {
+                            double deciTime = time;
                             deciTime = deciTime / 1000; //Stores time in seconds.
 
-                            double ratio = 1.3; //This is the treadmill ratio. //TODO: This ratio need to be correctly calculated.
-                            boolean outcome = distance > (ratio * 1.3 - length * 1.3);
-
-                            //TODO: write to firebase as an array
-                            myRef.child("pit" + (isRamp ? "Ramp" : "Drive") + "Time")/*.child(arrayNum)*/.setValue(deciTime);
-                            myRef.child("pit" + (isRamp ? "Ramp" : "Drive") + "TimeOutcome")/*.child(arrayNum)*/.setValue(outcome);
+                            String typeString = isRamp ? "Ramp" : "Drive";
+                            myRef.child("pit" + typeString + "Time").child("" + trialCountMap.get(typeString)).setValue(deciTime);
+                            myRef.child("pit" + typeString + "TimeOutcome").child("" + trialCountMap.get(typeString)).setValue(success);
 
                             time = 0;
                             timerView.setText("00:00.00");
@@ -170,14 +326,110 @@ public class TimerActivity extends AppCompatActivity {
                             Toast successToast = Toast.makeText(getApplicationContext(), "Sent!", Toast.LENGTH_SHORT);
                             successToast.setGravity(Gravity.CENTER, 0, 0);
                             successToast.show();
+
+                            dialog.dismiss();
                         }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
+                    }
+                });
+            } else {
+
+                //TODO: Should these be final?
+                LayoutInflater layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                final RelativeLayout confirmDialog = (RelativeLayout) layoutInflater.inflate(R.layout.drive_confirm_dialog, null);
+                final TextView questionView = (TextView)confirmDialog.findViewById(R.id.questionView);
+                final EditText distanceEditText = (EditText)confirmDialog.findViewById(R.id.distanceView);
+                final EditText lengthEditText = (EditText)confirmDialog.findViewById(R.id.lengthView);
+                final RadioGroup ratioRadioGroup = (RadioGroup)confirmDialog.findViewById(R.id.radioGroup);
+
+
+                String question = "What was the distance travelled?";
+                questionView.setText(question);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setView(confirmDialog)
+                        .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                final AlertDialog dialog = builder.create();
+                dialog.show();
+
+                //Changes the onClick of the positive button (Submit) so that the dialog doesn't close if data is incorrect.
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Boolean canContinue = false;
+
+                        String distanceString = distanceEditText.getText().toString();
+                        String lengthString = lengthEditText.getText().toString();
+
+                        float distance = 0, length = 0;
+                        try {
+                            distance = Float.parseFloat(distanceString);
+                            length = Float.parseFloat(lengthString);
+                            canContinue = true;
+                        } catch (NumberFormatException e) {
+                            Toast decimalToast = Toast.makeText(getApplicationContext(), "Invalid numbers (check for extra decimals)", Toast.LENGTH_SHORT);
+                            decimalToast.setGravity(Gravity.CENTER, 0, 0);
+                            decimalToast.show();
+                            canContinue = false;
+                            return;
                         }
-                    })
-                    .show();
+
+                        double ratio = 1; //Default treadmill ratio.
+                        switch(ratioRadioGroup.getCheckedRadioButtonId()) {
+                            case R.id.slowButton:
+                                ratio = 0.8;
+                                canContinue = true;
+                                break;
+                            case R.id.mediumButton:
+                                ratio = 1.0;
+                                canContinue = true;
+                                break;
+                            case R.id.fastButton:
+                                ratio = 1.2;
+                                canContinue = true;
+                                break;
+                            case -1: //This case occurs when no button is selected.
+                                Toast radioToast = Toast.makeText(getApplicationContext(), "Please select a ratio", Toast.LENGTH_SHORT);
+                                radioToast.setGravity(Gravity.CENTER, 0, 0);
+                                radioToast.show();
+                                canContinue = false;
+                                break;
+                        }
+
+                        if(canContinue) {
+                            double deciTime = time;
+                            deciTime = deciTime / 1000; //Stores time in seconds.
+
+                            //TODO: Use something else for ramp.
+                            boolean outcome = (distance * ratio) > (10 - length);
+
+                            String typeString = isRamp ? "Ramp" : "Drive";
+                            myRef.child("pit" + typeString + "Time").child("" + trialCountMap.get(typeString)).setValue(deciTime);
+                            myRef.child("pit" + typeString + "TimeOutcome").child("" + trialCountMap.get(typeString)).setValue(outcome);
+
+                            time = 0;
+                            timerView.setText("00:00.00");
+
+                            Toast successToast = Toast.makeText(getApplicationContext(), "Sent!", Toast.LENGTH_SHORT);
+                            successToast.setGravity(Gravity.CENTER, 0, 0);
+                            successToast.show();
+
+                            dialog.dismiss();
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -188,5 +440,18 @@ public class TimerActivity extends AppCompatActivity {
         timerRunning = false;
         toggleButton.setText("START");
     }
+
+    private void getExtras() {
+        Intent previous = getIntent();
+        teamNumber = previous.getIntExtra("teamNumber", 0);
+    }
+
+}
+
+//For temporarily holding values of each chat box.
+class ViewHolder {
+    TextView trialView;
+    TextView timeView;
+    TextView outcomeView;
 }
 

@@ -1,6 +1,7 @@
 package com.jadem.androidpitscout;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,7 +10,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -25,11 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    ArrayAdapter<String> searchAdapter;
-    Button tempButton;
-    EditText searchBar;
-    ListView listView;
     Context context;
+    ListView listView;
     public static FirebaseDatabase dataBase;
     public static DatabaseReference ref;
     List<DataModel> dataModelsList;
@@ -46,14 +46,13 @@ public class MainActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         dataBase = FirebaseDatabase.getInstance();
-        dataBaseReference=FirebaseDatabase.getInstance().getReference();
+        dataBaseReference = FirebaseDatabase.getInstance().getReference();
         ref = dataBase.getReference();
         context = this;
 
         listView = (ListView) findViewById(R.id.teamsList);
 
         //adapter = new TeamListAdapter(dataModelsList, getApplicationContext());
-        adapter = new
         listView.setAdapter(adapter);
 
         ValueEventListener teamEventListener = new ValueEventListener() {
@@ -63,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 dataModelsList = new ArrayList<DataModel>();
 
-                for(int pos = 0; pos < 10000; pos++) {
-                    if(dataSnapshot.child("Teams").hasChild("" + pos)) {
+                for (int pos = 0; pos < 10000; pos++) {
+                    if (dataSnapshot.child("Teams").hasChild("" + pos)) {
                         String name = dataSnapshot.child("Teams").child("" + pos).child("name").getValue().toString();
                         Integer number = Integer.parseInt(dataSnapshot.child("Teams").child("" + pos).child("number").getValue().toString());
                         DataModel dataModel = new DataModel(name, number);
