@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -41,6 +42,7 @@ import java.util.Map;
 
 public class TimerActivity extends AppCompatActivity {
 
+    private Context context;
     private boolean isRamp, timerRunning, success;
     private int teamNumber;
     private Button toggleButton;
@@ -60,6 +62,7 @@ public class TimerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        context = this;
 
         getExtras();
 
@@ -151,6 +154,33 @@ public class TimerActivity extends AppCompatActivity {
         };
         timerListView = (ListView) findViewById(R.id.timesList);
         timerListView.setAdapter(timerAdapter);
+        timerListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id)
+            {
+                final int trialNum = pos;
+                int displayTrialNum = pos + 1;
+                AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
+                builder.setTitle("Delete trial")
+                        .setMessage("Are you sure you want to delete trial #" + displayTrialNum + "?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                String typeString = isRamp ? "Ramp" : "Drive";
+                                myRef.child("pit" + typeString + "Time").child("" + trialNum).setValue(null);
+                                myRef.child("pit" + typeString + "TimeOutcome").child("" + trialNum).setValue(null);
+                                myRef.addListenerForSingleValueEvent(trialEventListener);
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        });
 
         trialEventListener = new ValueEventListener() {
             @Override
@@ -274,7 +304,6 @@ public class TimerActivity extends AppCompatActivity {
                 builder.setView(confirmDialog)
                         .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-
 
                             }
                         })
