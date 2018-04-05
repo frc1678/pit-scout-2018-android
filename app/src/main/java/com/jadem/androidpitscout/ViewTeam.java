@@ -34,7 +34,6 @@ public class ViewTeam extends AppCompatActivity {
     TextView SEALsNotesTextView;
     Context context;
     Button sendNotesButton;
-    private String key;
 
     FirebaseDatabase database;
     DatabaseReference dataBaseReference;
@@ -44,7 +43,6 @@ public class ViewTeam extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.team_view);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        key = null;
 
         context = this;
         getExtras();
@@ -68,7 +66,7 @@ public class ViewTeam extends AppCompatActivity {
     public void sendNotes(View view) {
         String notes = SEALsNotesEditText.getText().toString();
 
-        if(!notes.equals("")) {
+        if (!notes.equals("")) {
             dataBaseReference.setValue(notes);
         }
     }
