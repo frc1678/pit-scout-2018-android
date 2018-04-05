@@ -66,15 +66,11 @@ public class ViewTeam extends AppCompatActivity {
     }
 
     public void sendNotes(View view) {
-
         String notes = SEALsNotesEditText.getText().toString();
 
         if(!notes.equals("")) {
-
             dataBaseReference.setValue(notes);
-
         }
-
     }
 
     public void openTimer(View view) {
