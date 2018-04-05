@@ -17,6 +17,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by jadem on 3/18/2018.
  */
@@ -30,30 +33,48 @@ public class ViewTeam extends AppCompatActivity {
     TextView teamTextView;
     TextView SEALsNotesTextView;
     Context context;
+    Button sendNotesButton;
+    private String key;
 
-    DatabaseReference dataBase;
-
+    FirebaseDatabase database;
+    DatabaseReference dataBaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.team_view);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        key = null;
 
         context = this;
         getExtras();
 
+        database = FirebaseDatabase.getInstance();
+        dataBaseReference = database.getReference().child("Teams").child("" + teamNumber).child("pitSEALsNotes");
+
         SEALsNotesEditText = (EditText) findViewById(R.id.SEALsNotesEditText);
         SEALsNotesTextView = (TextView) findViewById(R.id.SEALsNotesTextView);
         teamTextView = (TextView) findViewById(R.id.teamTextView);
-
+        sendNotesButton = (Button) findViewById(R.id.SendButton);
         timerButton = (Button) findViewById(R.id.timer);
+
         String teamNameString = "Team " + teamNumber + " - " + teamName;
         teamTextView.setText(teamNameString);
 
-
-
         SEALsNotesEditText.setFocusable(true);
+
+    }
+
+    public void sendNotes(View view) {
+
+        String notes = SEALsNotesEditText.getText().toString();
+
+        if(!notes.equals("")) {
+
+            dataBaseReference.setValue(notes);
+
+        }
+
     }
 
     public void openTimer(View view) {
@@ -67,4 +88,5 @@ public class ViewTeam extends AppCompatActivity {
         teamNumber = previous.getIntExtra("teamNumber", 0);
         teamName = previous.getStringExtra("teamName");
     }
+
 }
