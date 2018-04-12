@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         for (int pos = dataModelsListOriginal.size() - 1; pos >= 0; pos--) {
 
             if(!dataModelsList.get(pos).getFormattedString().toLowerCase().contains(string.toLowerCase())) {
-                //TODO: Delete current pos
+                dataModelsList.remove(pos);
             }
 
         }
