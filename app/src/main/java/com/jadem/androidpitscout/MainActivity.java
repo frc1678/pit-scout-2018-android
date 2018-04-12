@@ -169,23 +169,30 @@ public class MainActivity extends AppCompatActivity {
 
     public void createSearchList(String string) {
 
+        dataModelsList = dataModelsListOriginal;
+        for (int pos = dataModelsListOriginal.size() - 1; pos >= 0; pos--) {
 
+            if(!dataModelsList.get(pos).getFormattedString().toLowerCase().contains(string.toLowerCase())) {
+                //TODO: Delete current pos
+            }
+
+        }
 
     }
 
-        @Override
-        public boolean onCreateOptionsMenu (Menu menu){
-            getMenuInflater().inflate(R.menu.main, menu);
-            return true;
-        }
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu){
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
-        @Override
-        public boolean onOptionsItemSelected (MenuItem item){
-            int id = item.getItemId();
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item){
+        int id = item.getItemId();
 
 
-            return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
+    }
 
 }
 
