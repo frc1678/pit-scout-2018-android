@@ -1,12 +1,13 @@
 package com.jadem.androidpitscout;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,16 +30,17 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     Context context;
     ListView listView;
     public static FirebaseDatabase dataBase;
     public static DatabaseReference ref;
+    List<DataModel> dataModelsListOriginal;
     List<DataModel> dataModelsList;
     BaseAdapter adapter;
     private DatabaseReference dataBaseReference;
+    EditText searchBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +53,13 @@ public class MainActivity extends AppCompatActivity {
         ref = dataBase.getReference();
         context = this;
 
+        searchBar = (EditText) findViewById(R.id.searchEditText);
+
         listView = (ListView) findViewById(R.id.teamsList);
 
+
+
+        dataModelsListOriginal = new ArrayList<DataModel>();
         dataModelsList = new ArrayList<DataModel>();
         adapter = new BaseAdapter() {
             @Override
@@ -114,17 +122,18 @@ public class MainActivity extends AppCompatActivity {
             //TODO: This is inefficient. Replace with more efficient method later.
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                dataModelsList = new ArrayList<DataModel>();
+                dataModelsListOriginal = new ArrayList<DataModel>();
 
                 for (int pos = 0; pos < 10000; pos++) {
                     if (dataSnapshot.child("Teams").hasChild("" + pos)) {
                         String name = dataSnapshot.child("Teams").child("" + pos).child("name").getValue().toString();
                         Integer number = Integer.parseInt(dataSnapshot.child("Teams").child("" + pos).child("number").getValue().toString());
                         DataModel dataModel = new DataModel(name, number);
-                        dataModelsList.add(dataModel);
+                        dataModelsListOriginal.add(dataModel);
                     }
                 }
                 //TODO: Notify adapter (only if there is a new team)
+                dataModelsList = dataModelsListOriginal;
                 adapter.notifyDataSetChanged();
             }
 
@@ -137,6 +146,28 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         ref.addListenerForSingleValueEvent(teamEventListener);
+
+
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                String searchString = charSequence.toString();
+                createSearchList(searchString);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+    }
+
+    public void createSearchList(String string) {
 
 
 
@@ -160,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //TODO: Add this in with the searchResultsActivity when the listview is done.
-    /*public boolean onCreateOptionsMenu(Menu menu) {
+   /* public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
 
