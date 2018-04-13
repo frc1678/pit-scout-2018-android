@@ -52,7 +52,6 @@ public class TimerActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference myRef;
     private Map<String, List<TrialData>> trialListMap;
-    private Map<String, Long> trialCountMap;
     private ValueEventListener trialEventListener;
     private long time = 0;
     private BaseAdapter timerAdapter;
@@ -102,10 +101,6 @@ public class TimerActivity extends AppCompatActivity {
         trialListMap = new HashMap<>();
         trialListMap.put("Ramp", new ArrayList<TrialData>());
         trialListMap.put("Drive", new ArrayList<TrialData>());
-
-        trialCountMap = new HashMap<>();
-        trialCountMap.put("Ramp", Long.valueOf(0));
-        trialCountMap.put("Drive", Long.valueOf(0));
 
         timerAdapter = new BaseAdapter() {
             @Override
@@ -241,10 +236,6 @@ public class TimerActivity extends AppCompatActivity {
                     trialListMap.put("Ramp", rampList);
                     trialListMap.put("Drive", driveList);
 
-                    trialCountMap = new HashMap<>();
-                    trialCountMap.put("Ramp", dataSnapshot.child(rTime).getChildrenCount());
-                    trialCountMap.put("Drive", dataSnapshot.child(dTime).getChildrenCount());
-
                     timerAdapter.notifyDataSetChanged();
                 }
             }
@@ -346,8 +337,9 @@ public class TimerActivity extends AppCompatActivity {
                             deciTime = deciTime / 1000; //Stores time in seconds.
 
                             String typeString = isRamp ? "Ramp" : "Drive";
-                            myRef.child("pit" + typeString + "Time").child("" + trialCountMap.get(typeString)).setValue(deciTime);
-                            myRef.child("pit" + typeString + "TimeOutcome").child("" + trialCountMap.get(typeString)).setValue(success);
+                            int trialNum = trialListMap.get(typeString).size();
+                            myRef.child("pit" + typeString + "Time").child("" + trialNum).setValue(deciTime);
+                            myRef.child("pit" + typeString + "TimeOutcome").child("" + trialNum).setValue(success);
 
                             time = 0;
                             timerView.setText("00:00.00");
@@ -444,8 +436,9 @@ public class TimerActivity extends AppCompatActivity {
                             boolean outcome = (distance * ratio) > (10 - length);
 
                             String typeString = isRamp ? "Ramp" : "Drive";
-                            myRef.child("pit" + typeString + "Time").child("" + trialCountMap.get(typeString)).setValue(deciTime);
-                            myRef.child("pit" + typeString + "TimeOutcome").child("" + trialCountMap.get(typeString)).setValue(outcome);
+                            int trialNum = trialListMap.get(typeString).size();
+                            myRef.child("pit" + typeString + "Time").child("" + trialNum).setValue(deciTime);
+                            myRef.child("pit" + typeString + "TimeOutcome").child("" + trialNum).setValue(outcome);
 
                             time = 0;
                             timerView.setText("00:00.00");
