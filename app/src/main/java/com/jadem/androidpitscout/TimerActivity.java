@@ -237,6 +237,12 @@ public class TimerActivity extends AppCompatActivity {
                     trialListMap.put("Drive", driveList);
 
                     timerAdapter.notifyDataSetChanged();
+                } else {
+                    //Prevents errors from deleting all trial data on Firebase
+
+                    trialListMap = new HashMap<>();
+                    trialListMap.put("Ramp", new ArrayList<TrialData>());
+                    trialListMap.put("Drive", new ArrayList<TrialData>());
                 }
             }
 
