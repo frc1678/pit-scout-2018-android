@@ -3,6 +3,7 @@ package com.jadem.androidpitscout;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -17,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -41,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     BaseAdapter adapter;
     private DatabaseReference dataBaseReference;
     EditText searchBar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
         searchBar = (EditText) findViewById(R.id.searchEditText);
 
         listView = (ListView) findViewById(R.id.teamsList);
-
-
 
         dataModelsListOriginal = new ArrayList<DataModel>();
         dataModelsList = new ArrayList<DataModel>();
@@ -133,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 //TODO: Notify adapter (only if there is a new team)
-                dataModelsList = dataModelsListOriginal;
+                dataModelsList = new ArrayList<DataModel>(dataModelsListOriginal);
                 adapter.notifyDataSetChanged();
             }
 
@@ -169,16 +168,19 @@ public class MainActivity extends AppCompatActivity {
 
     public void createSearchList(String string) {
 
-        dataModelsList = dataModelsListOriginal;
+        dataModelsList = new ArrayList<DataModel>(dataModelsListOriginal);
         for (int pos = dataModelsListOriginal.size() - 1; pos >= 0; pos--) {
 
             if(!dataModelsList.get(pos).getFormattedString().toLowerCase().contains(string.toLowerCase())) {
                 dataModelsList.remove(pos);
-            }
 
+                Log.d("dataModelsList", dataModelsList.toString());
+                Log.d("dataModelsListOriginal", dataModelsListOriginal.toString());
+            }
         }
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu){
@@ -195,19 +197,3 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-
-
-        //TODO: Add this in with the searchResultsActivity when the listview is done.
-   /* public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
-
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.search_layout).getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo((getComponentName())));
-
-        return true;
-    }*/
