@@ -3,7 +3,6 @@ package com.jadem.androidpitscout;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -106,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
                 DataModel dataModel = dataModelsList.get(pos);
                 String teamName = dataModel.getName();
-                Integer teamNumber = dataModel.getTeamNumber();
+                Integer teamNumber = dataModel.getNumber();
 
                 Intent intent = new Intent(MainActivity.this,ViewTeam.class);
                 intent.putExtra("teamName", teamName);
