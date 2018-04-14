@@ -9,6 +9,10 @@ public class DataModel {
     private String name;
     private Integer teamNumber;
 
+    public DataModel() {
+        //Allows usage as Firebase POJO.
+    }
+
     public DataModel(String name, Integer teamNumber) {
         this.name = name;
         this.teamNumber = teamNumber;
