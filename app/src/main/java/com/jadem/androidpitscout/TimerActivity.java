@@ -474,6 +474,25 @@ public class TimerActivity extends AppCompatActivity {
         teamNumber = previous.getIntExtra("teamNumber", 0);
     }
 
+    private Map<String, List> getEditTrialMap(int deletePos) {
+        String typeString = isRamp ? "Ramp" : "Drive";
+        List<TrialData> trialList = new ArrayList<>(trialListMap.get(typeString));
+        List<Double> timeList = new ArrayList<>();
+        List<Boolean> outcomeList = new ArrayList<>();
+
+        for(int pos = 0; pos < trialList.size(); pos++) {
+            if(pos != deletePos) {
+                timeList.add(trialList.get(pos).getTime());
+                outcomeList.add(trialList.get(pos).getOutcome());
+            }
+        }
+
+        Map<String, List> editTrialMap = new HashMap<>();
+        editTrialMap.put("Time", timeList);
+        editTrialMap.put("Outcome", outcomeList);
+
+        return editTrialMap;
+    }
 }
 
 //For temporarily holding values of each item.
