@@ -161,9 +161,10 @@ public class TimerActivity extends AppCompatActivity {
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 String typeString = isRamp ? "Ramp" : "Drive";
-                                myRef.child("pit" + typeString + "Time").child("" + trialNum).setValue(null);
-                                myRef.child("pit" + typeString + "TimeOutcome").child("" + trialNum).setValue(null);
-                                myRef.addListenerForSingleValueEvent(trialEventListener);
+                                Map<String, List> editTrialMap = getEditTrialMap(trialNum);
+                                myRef.child("pit" + typeString + "Time").setValue(editTrialMap.get("Time"));
+                                myRef.child("pit" + typeString + "TimeOutcome").setValue(editTrialMap.get("Outcome"));
+                                myRef.addListenerForSingleValueEvent(trialEventListener); //TODO: Is this needed?
                                 dialog.dismiss();
                             }
                         })
