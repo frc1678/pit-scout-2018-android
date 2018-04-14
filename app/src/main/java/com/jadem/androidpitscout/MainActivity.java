@@ -123,13 +123,9 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 dataModelsListOriginal = new ArrayList<DataModel>();
 
-                for (int pos = 0; pos < 10000; pos++) {
-                    if (dataSnapshot.hasChild("" + pos)) {
-                        String name = dataSnapshot.child("" + pos).child("name").getValue().toString();
-                        Integer number = Integer.parseInt(dataSnapshot.child("" + pos).child("number").getValue().toString());
-                        DataModel dataModel = new DataModel(name, number);
-                        dataModelsListOriginal.add(dataModel);
-                    }
+                for (DataSnapshot teamSnapshot: dataSnapshot.getChildren()) {
+                    DataModel dataModel = teamSnapshot.getValue(DataModel.class);
+                    dataModelsListOriginal.add(dataModel);
                 }
                 //TODO: Notify adapter (only if there is a new team)
                 dataModelsList = new ArrayList<DataModel>(dataModelsListOriginal);
