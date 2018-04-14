@@ -122,13 +122,13 @@ public class TimerActivity extends AppCompatActivity {
             @Override //Partially modelled after http://stackoverflow.com/questions/35761897/how-do-i-make-a-relative-layout-an-item-of-my-listview-and-detect-gestures-over
             public View getView(int position, View convertView, ViewGroup parent) {
                 LayoutInflater layoutInflater;
-                TimerViewHolder listViewHolder;
+                TimerViewHolder listViewHolder = new TimerViewHolder();
+                String typeString = isRamp ? "Ramp" : "Drive";
 
                 if(convertView == null){
                     layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     convertView = layoutInflater.inflate(R.layout.layout_timer_list_item, parent, false);
 
-                    listViewHolder = new TimerViewHolder();
                     listViewHolder.trialView = (TextView) convertView.findViewById(R.id.trialView);
                     listViewHolder.timeView = (TextView) convertView.findViewById(R.id.timeView);
                     listViewHolder.outcomeView = (TextView) convertView.findViewById(R.id.outcomeView);
@@ -139,9 +139,9 @@ public class TimerActivity extends AppCompatActivity {
 
                 String posString = "" + (position + 1);
                 listViewHolder.trialView.setText(posString);
-                String timeString = trialListMap.get(isRamp ? "Ramp" : "Drive").get(position).getTimeString();
+                String timeString = trialListMap.get(typeString).get(position).getTimeString();
                 listViewHolder.timeView.setText(timeString);
-                String outcomeString = trialListMap.get(isRamp ? "Ramp" : "Drive").get(position).getOutcomeString();
+                String outcomeString = trialListMap.get(typeString).get(position).getOutcomeString();
                 listViewHolder.outcomeView.setText(outcomeString);
 
                 return convertView;
@@ -236,8 +236,6 @@ public class TimerActivity extends AppCompatActivity {
                     trialListMap = new HashMap<>();
                     trialListMap.put("Ramp", rampList);
                     trialListMap.put("Drive", driveList);
-
-                    timerAdapter.notifyDataSetChanged();
                 } else {
                     //Prevents errors from deleting all trial data on Firebase
 
@@ -245,6 +243,8 @@ public class TimerActivity extends AppCompatActivity {
                     trialListMap.put("Ramp", new ArrayList<TrialData>());
                     trialListMap.put("Drive", new ArrayList<TrialData>());
                 }
+
+                timerAdapter.notifyDataSetChanged();
             }
 
             @Override
