@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         dataBase = FirebaseDatabase.getInstance();
         dataBaseReference = FirebaseDatabase.getInstance().getReference();
-        ref = dataBase.getReference();
+        ref = dataBase.getReference().child("Teams");
         context = this;
 
         searchBar = (EditText) findViewById(R.id.searchEditText);
@@ -124,9 +124,9 @@ public class MainActivity extends AppCompatActivity {
                 dataModelsListOriginal = new ArrayList<DataModel>();
 
                 for (int pos = 0; pos < 10000; pos++) {
-                    if (dataSnapshot.child("Teams").hasChild("" + pos)) {
-                        String name = dataSnapshot.child("Teams").child("" + pos).child("name").getValue().toString();
-                        Integer number = Integer.parseInt(dataSnapshot.child("Teams").child("" + pos).child("number").getValue().toString());
+                    if (dataSnapshot.hasChild("" + pos)) {
+                        String name = dataSnapshot.child("" + pos).child("name").getValue().toString();
+                        Integer number = Integer.parseInt(dataSnapshot.child("" + pos).child("number").getValue().toString());
                         DataModel dataModel = new DataModel(name, number);
                         dataModelsListOriginal.add(dataModel);
                     }
